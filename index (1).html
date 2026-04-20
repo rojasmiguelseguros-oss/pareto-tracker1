@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker Pareto — Rojas Consultores</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0d0d; --bg2:#141414; --bg3:#1a1a1a; --bg4:#222;
+  --border:#2b2b2b; --border2:#383838;
+  --text:#e6e4de; --text2:#857f77; --text3:#4a4843;
+  --green:#1cbd7c; --green-d:#0d7a4f; --green-bg:#0a2419;
+  --amber:#e89c2f; --amber-bg:#221800;
+  --red:#e05252;   --red-bg:#1f0a0a;
+  --blue:#4a9eff;  --blue-bg:#061528;
+  --purple:#a78bfa;
+  --r:10px; --rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+.app-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.app-logo{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
+.app-logo span{color:var(--green)}
+.header-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)}
+
+.role-tabs{display:flex;gap:4px;padding:12px 20px 0;background:var(--bg2);border-bottom:1px solid var(--border)}
+.role-tab{padding:9px 18px;border-radius:var(--r) var(--r) 0 0;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text2);font-family:'Sora',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;position:relative;bottom:-1px}
+.role-tab:hover{color:var(--text);background:var(--bg3)}
+.role-tab.active{background:var(--bg);color:var(--text);border-color:var(--border);border-bottom-color:var(--bg)}
+.tab-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.tab-dot.promotor{background:var(--purple)}
+.tab-dot.agente{background:var(--blue)}
+
+.app-body{max-width:860px;margin:0 auto;padding:20px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.sub-tabs{display:flex;gap:5px;margin-bottom:20px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:4px}
+.sub-tab{flex:1;padding:8px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-family:'Sora',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center}
+.sub-tab:hover{color:var(--text)}
+.sub-tab.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2)}
+
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+
+.cards-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:18px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:13px 15px}
+.sc-label{font-size:11px;color:var(--text2);margin-bottom:5px}
+.sc-val{font-size:21px;font-weight:600;line-height:1}
+.sc-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.vg{color:var(--green)} .va{color:var(--amber)} .vr{color:var(--red)} .vb{color:var(--blue)} .vp{color:var(--purple)}
+
+.semaforo-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:15px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px}
+.sem-circle{width:50px;height:50px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'DM Mono',monospace;transition:all .4s;text-align:center;line-height:1.2}
+.sg{background:var(--green-bg);color:var(--green);border:2px solid var(--green-d)}
+.sa{background:var(--amber-bg);color:var(--amber);border:2px solid #7a5200}
+.sr{background:var(--red-bg);color:var(--red);border:2px solid #7a1010}
+.sem-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.sem-desc{font-size:12px;color:var(--text2);line-height:1.5}
+
+.reg-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.reg-row label{font-size:12px;color:var(--text2)}
+.date-input{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:7px 11px;outline:none;transition:border-color .2s}
+.date-input:focus{border-color:var(--green)}
+
+.grp-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 0 6px;border-bottom:1px solid var(--border);margin-bottom:7px}
+.grp-title.clave{color:var(--green)}
+.grp-title.secund{color:var(--text3)}
+
+.act-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;transition:border-color .15s}
+.act-item:hover{border-color:var(--border2)}
+.act-item.clave{border-left:3px solid var(--green-d)}
+.act-item.secund{border-left:3px solid var(--border2);opacity:.75}
+.act-name{flex:1;font-size:13px;line-height:1.4}
+.act-meta-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px}
+.act-counter{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.cbtn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--bg4);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;line-height:1}
+.cbtn:hover{border-color:var(--green);color:var(--green)}
+.cval{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;min-width:22px;text-align:center;transition:color .2s}
+.cval.has{color:var(--green)}
+
+.save-btn{width:100%;padding:13px;background:var(--green);color:#000;border:none;border-radius:var(--r);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:14px;transition:opacity .2s,transform .1s;letter-spacing:.02em}
+.save-btn:hover{opacity:.9}
+.save-btn:active{transform:scale(.99)}
+.save-btn:disabled{opacity:.4;cursor:default}
+
+.prog-item{margin-bottom:12px}
+.prog-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.prog-name{font-size:12px}
+.prog-nums{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2)}
+.prog-track{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.fg{background:var(--green)} .fa{background:var(--amber)} .fr{background:var(--red)} .fb{background:var(--blue)}
+
+.chart-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:15px;margin-bottom:18px}
+.chart-title{font-size:10px;color:var(--text2);margin-bottom:12px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:80px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end}
+.bar-vis{width:100%;border-radius:3px 3px 0 0;min-height:2px}
+.bar-day{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)}
+.bar-pct{font-family:'DM Mono',monospace;font-size:9px;color:var(--text2)}
+
+.cat-item{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px}
+.cat-badge{font-family:'DM Mono',monospace;font-size:9px;padding:3px 6px;border-radius:4px;flex-shrink:0;margin-top:1px;text-transform:uppercase;letter-spacing:.06em}
+.bc{background:var(--green-bg);color:var(--green);border:1px solid var(--green-d)}
+.bs{background:var(--bg4);color:var(--text3);border:1px solid var(--border)}
+.cat-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.cat-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.meta-row{display:flex;align-items:center;gap:7px;margin-top:6px}
+.meta-row label{font-size:11px;color:var(--text3)}
+.meta-input{width:58px;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:4px 8px;outline:none;transition:border-color .2s}
+.meta-input:focus{border-color:var(--green)}
+
+.sync-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background .3s}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.err{background:var(--red)}
+.sync-dot.spin{background:var(--amber);animation:pulse .8s infinite alternate}
+@keyframes pulse{to{opacity:.3}}
+.sync-txt{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.empty-s{text-align:center;padding:28px 20px;color:var(--text3);font-size:12px;line-height:1.9}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--green-d);color:var(--green);font-family:'DM Mono',monospace;font-size:12px;padding:9px 20px;border-radius:999px;transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:#7a1010;color:var(--red)}
+
+@media(max-width:480px){
+  .app-body{padding:12px}
+  .cards-row{grid-template-columns:1fr 1fr}
+  .act-name{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">Rojas Consultores <span>/ Pareto Tracker</span></div>
+  <div class="header-date" id="hDate">—</div>
+</div>
+
+<div class="role-tabs">
+  <button class="role-tab active" onclick="switchRole('promotor',this)">
+    <span class="tab-dot promotor"></span>Promotor
+  </button>
+  <button class="role-tab" onclick="switchRole('agente',this)">
+    <span class="tab-dot agente"></span>Agente
+  </button>
+</div>
+
+<!-- ═══════════ PROMOTOR ═══════════ -->
+<div class="tab-panel active" id="panel-promotor">
+<div class="app-body">
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSub('promotor','registro',this)">📋 Registrar</button>
+    <button class="sub-tab" onclick="switchSub('promotor','dashboard',this)">📊 Dashboard</button>
+    <button class="sub-tab" onclick="switchSub('promotor','catalogo',this)">📚 Catálogo</button>
+  </div>
+
+  <!-- REGISTRO -->
+  <div class="sub-panel" id="promotor-registro">
+    <div class="sync-row"><div class="sync-dot" id="sdP"></div><span class="sync-txt" id="stP">Sin conectar</span></div>
+    <div class="reg-row"><label>Fecha</label><input type="date" class="date-input" id="dpP"></div>
+    <div class="grp-title clave">▲ Actividades clave — 20%</div>
+    <div id="alP-clave"></div>
+    <div class="grp-title secund" style="margin-top:14px">▼ Actividades secundarias — 80%</div>
+    <div id="alP-secund"></div>
+    <button class="save-btn" id="sbP" onclick="saveDay('promotor')">Guardar día →</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="sub-panel" id="promotor-dashboard" style="display:none">
+    <div class="semaforo-wrap">
+      <div class="sem-circle sg" id="scP">—</div>
+      <div><div class="sem-title" id="stitleP">—</div><div class="sem-desc" id="sdescP">Registra actividades para activar el semáforo.</div></div>
+    </div>
+    <div class="section-label">Esta semana</div>
+    <div class="cards-row">
+      <div class="stat-card"><div class="sc-label">% en actividades clave</div><div class="sc-val vg" id="mPctP">—</div><div class="sc-sub">meta ≥ 60%</div></div>
+      <div class="stat-card"><div class="sc-label">Entrevistas de carrera</div><div class="sc-val vp" id="mEntP">—</div><div class="sc-sub">meta semanal</div></div>
+      <div class="stat-card"><div class="sc-label">Citas de venta propias</div><div class="sc-val vb" id="mCitP">—</div><div class="sc-sub">meta semanal</div></div>
+      <div class="stat-card"><div class="sc-label">Llamadas de prospección</div><div class="sc-val va" id="mProP">—</div><div class="sc-sub">meta 500 / semana</div></div>
+    </div>
+    <div class="section-label">Cumplimiento vs meta semanal</div>
+    <div class="chart-wrap" id="pwP"><div class="empty-s">Sin datos esta semana.</div></div>
+    <div class="section-label">Últimos 7 días</div>
+    <div class="chart-wrap"><div class="chart-title">% actividades clave por día</div><div class="bar-chart" id="bcP"></div></div>
+  </div>
+
+  <!-- CATÁLOGO -->
+  <div class="sub-panel" id="promotor-catalogo" style="display:none">
+    <div class="section-label">Actividades clave — edita tus metas semanales</div>
+    <div id="ccP-clave"></div>
+    <div class="section-label" style="margin-top:14px">Actividades secundarias</div>
+    <div id="ccP-secund"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ AGENTE ═══════════ -->
+<div class="tab-panel" id="panel-agente">
+<div class="app-body">
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSub('agente','registro',this)">📋 Registrar</button>
+    <button class="sub-tab" onclick="switchSub('agente','dashboard',this)">📊 Dashboard</button>
+    <button class="sub-tab" onclick="switchSub('agente','catalogo',this)">📚 Catálogo</button>
+  </div>
+
+  <!-- REGISTRO -->
+  <div class="sub-panel" id="agente-registro">
+    <div class="sync-row"><div class="sync-dot" id="sdA"></div><span class="sync-txt" id="stA">Sin conectar</span></div>
+    <div class="reg-row"><label>Fecha</label><input type="date" class="date-input" id="dpA"></div>
+    <div class="grp-title clave">▲ Actividades clave — 20%</div>
+    <div id="alA-clave"></div>
+    <div class="grp-title secund" style="margin-top:14px">▼ Actividades secundarias — 80%</div>
+    <div id="alA-secund"></div>
+    <button class="save-btn" id="sbA" onclick="saveDay('agente')">Guardar día →</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="sub-panel" id="agente-dashboard" style="display:none">
+    <div class="semaforo-wrap">
+      <div class="sem-circle sg" id="scA">—</div>
+      <div><div class="sem-title" id="stitleA">—</div><div class="sem-desc" id="sdescA">Registra actividades para activar el semáforo.</div></div>
+    </div>
+    <div class="section-label">Esta semana</div>
+    <div class="cards-row">
+      <div class="stat-card"><div class="sc-label">% en actividades clave</div><div class="sc-val vg" id="mPctA">—</div><div class="sc-sub">meta ≥ 60%</div></div>
+      <div class="stat-card"><div class="sc-label">Citas de venta</div><div class="sc-val vb" id="mCitA">—</div><div class="sc-sub">meta semanal</div></div>
+      <div class="stat-card"><div class="sc-label">Referidos pedidos</div><div class="sc-val va" id="mRefA">—</div><div class="sc-sub">meta semanal</div></div>
+      <div class="stat-card"><div class="sc-label">Llamadas de prospección</div><div class="sc-val va" id="mSegA">—</div><div class="sc-sub">meta 500 / semana</div></div>
+    </div>
+    <div class="section-label">Cumplimiento vs meta semanal</div>
+    <div class="chart-wrap" id="pwA"><div class="empty-s">Sin datos esta semana.</div></div>
+    <div class="section-label">Últimos 7 días</div>
+    <div class="chart-wrap"><div class="chart-title">% actividades clave por día</div><div class="bar-chart" id="bcA"></div></div>
+  </div>
+
+  <!-- CATÁLOGO -->
+  <div class="sub-panel" id="agente-catalogo" style="display:none">
+    <div class="section-label">Actividades clave — edita tus metas semanales</div>
+    <div id="ccA-clave"></div>
+    <div class="section-label" style="margin-top:14px">Actividades secundarias</div>
+    <div id="ccA-secund"></div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────
+const SCRIPT_URL = 'TU_URL_AQUI'; // reemplaza tras setup Apps Script
+
+// ── CATÁLOGOS ────────────────────────────────────────
+const ACTS = {
+  promotor: [
+    {id:'P1',name:'Entrevistas de carrera (1:1 candidatos)',tier:'clave',meta:4,desc:'Entrevista presencial o virtual con candidato calificado del pipeline'},
+    {id:'P2',name:'Citas de venta propias (VPL-10 / Vitalicio)',tier:'clave',meta:3,desc:'Cita de venta propia con prospecto para producto de vida'},
+    {id:'P3',name:'Acompañamiento de agente en campo',tier:'clave',meta:3,desc:'Ir a cita junto con agente para mentoreo en vivo'},
+    {id:'P4',name:'Llamadas de prospección de clientes',tier:'clave',meta:500,metaDia:100,desc:'100 llamadas diarias de prospección de clientes — meta 500 por semana',highVolume:true},
+    {id:'P5',name:'Prospección activa (LinkedIn / referidos)',tier:'clave',meta:10,desc:'Mensajes o contacto directo con candidatos nuevos para reclutamiento'},
+    {id:'P6',name:'Seguimiento de pólizas en proceso',tier:'clave',meta:5,desc:'Llamada para cerrar o avanzar póliza pendiente de firma'},
+    {id:'P7',name:'Sesión de activación agente bronce → plata',tier:'clave',meta:2,desc:'Revisión de Proyecto 200 y metas TTC con agente bronce'},
+    {id:'P8',name:'Revisión semanal KPIs en CRM',tier:'secund',meta:1,desc:'Revisar dashboard y tomar decisiones de la semana'},
+    {id:'P9',name:'Capacitación grupal de agentes',tier:'secund',meta:1,desc:'Sesión de entrenamiento o producto con el equipo'},
+    {id:'P10',name:'Publicaciones en redes sociales',tier:'secund',meta:3,desc:'Contenido en LinkedIn o Facebook para atracción de candidatos'},
+    {id:'P11',name:'Revisión de correos y mensajes admin',tier:'secund',meta:0,desc:'Gestión de bandeja, WhatsApp administrativo'},
+    {id:'P12',name:'Preparación de materiales / cotizaciones',tier:'secund',meta:0,desc:'Preparar propuestas, cotizaciones o recursos de reclutamiento'},
+  ],
+  agente: [
+    {id:'A1',name:'Cita de venta con prospecto calificado',tier:'clave',meta:4,desc:'Reunión presencial o virtual para presentar propuesta de vida'},
+    {id:'A2',name:'Pedir referidos a clientes activos',tier:'clave',meta:5,desc:'Solicitar 2+ referidos en cada contacto con cliente vigente'},
+    {id:'A3',name:'Seguimiento post-cita (24–48h)',tier:'clave',meta:4,desc:'Llamada de seguimiento dentro de las 48h de la cita'},
+    {id:'A4',name:'Llamadas de prospección de clientes',tier:'clave',meta:500,metaDia:100,desc:'100 llamadas diarias de prospección de clientes — meta 500 por semana',highVolume:true},
+    {id:'A5',name:'Prospección activa (WhatsApp / Proyecto 200)',tier:'clave',meta:8,desc:'Contacto directo con prospectos de la lista Proyecto 200'},
+    {id:'A6',name:'Revisión anual de póliza (oportunidad upsell)',tier:'clave',meta:2,desc:'Llamada de aniversario para revisar cobertura y detectar necesidad adicional'},
+    {id:'A7',name:'Calificación de prospectos nuevos',tier:'clave',meta:5,desc:'Evaluar si el prospecto cumple: estabilidad financiera + motivación'},
+    {id:'A8',name:'Preparación de propuesta personalizada',tier:'secund',meta:0,desc:'Cotización y propuesta antes de cita confirmada'},
+    {id:'A9',name:'Capacitación y actualización de productos',tier:'secund',meta:0,desc:'Estudio de productos, reglamentos o materiales de Insignia Life'},
+    {id:'A10',name:'Publicaciones en redes sociales',tier:'secund',meta:2,desc:'Contenido de valor para generar visibilidad con prospectos'},
+    {id:'A11',name:'Cotizaciones sin cita confirmada',tier:'secund',meta:0,desc:'Enviar cotizaciones por WhatsApp sin cita agendada'},
+    {id:'A12',name:'Revisión de correos y mensajes',tier:'secund',meta:0,desc:'Administración de bandeja y comunicación general'},
+  ]
+};
+
+// ── STATE ─────────────────────────────────────────────
+const S = {
+  counters: { promotor:{}, agente:{} },
+  dates:    { promotor: td(), agente: td() },
+  history:  [],
+  metas:    {}
+};
+
+function td(){ return new Date().toISOString().slice(0,10); }
+
+// ── INIT ──────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('hDate').textContent =
+    now.toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'});
+
+  document.getElementById('dpP').value = td();
+  document.getElementById('dpA').value = td();
+
+  loadStorage();
+  loadMetas();
+
+  ['promotor','agente'].forEach(r => {
+    renderList(r);
+    renderCat(r);
+  });
+
+  const dp = document.getElementById('dpP');
+  const da = document.getElementById('dpA');
+  dp.addEventListener('change', e => { S.dates.promotor=e.target.value; loadDayCounters('promotor'); });
+  da.addEventListener('change', e => { S.dates.agente=e.target.value; loadDayCounters('agente'); });
+
+  if (SCRIPT_URL !== 'TU_URL_AQUI') ping();
+});
+
+// ── STORAGE ───────────────────────────────────────────
+function loadStorage(){
+  try { const h=localStorage.getItem('rcp_hist'); if(h) S.history=JSON.parse(h); } catch(e){}
+}
+function saveStorage(){ localStorage.setItem('rcp_hist', JSON.stringify(S.history)); }
+
+function loadMetas(){
+  try { const m=localStorage.getItem('rcp_metas'); if(m) S.metas=JSON.parse(m); } catch(e){}
+  Object.values(ACTS).flat().forEach(a => {
+    if (S.metas[a.id]===undefined) S.metas[a.id]=a.meta;
+  });
+}
+function saveMetas(){ localStorage.setItem('rcp_metas', JSON.stringify(S.metas)); }
+
+function loadDayCounters(role){
+  const date = S.dates[role];
+  const c = {};
+  ACTS[role].forEach(a => {
+    c[a.id] = S.history
+      .filter(h => h.role===role && h.date===date && h.actId===a.id)
+      .reduce((s,h)=>s+h.count,0);
+  });
+  S.counters[role] = c;
+  renderList(role);
+}
+
+// ── RENDER LIST ───────────────────────────────────────
+function renderList(role){
+  const sfx = role==='promotor'?'P':'A';
+  ['clave','secund'].forEach(tier => {
+    const el = document.getElementById(`al${sfx}-${tier}`);
+    if (!el) return;
+    el.innerHTML = '';
+    ACTS[role].filter(a=>a.tier===tier).forEach(a => {
+      const v = S.counters[role][a.id]||0;
+      const d = document.createElement('div');
+      d.className = `act-item ${tier}`;
+      const metaDia = a.metaDia ? ` · Meta hoy: ${a.metaDia}` : '';
+      if (a.highVolume) {
+        // Input numérico directo para actividades de alto volumen
+        const pct = a.metaDia ? Math.min(Math.round(v/a.metaDia*100),100) : 0;
+        const barColor = pct>=100?'var(--green)':pct>=60?'var(--blue)':pct>=30?'var(--amber)':'var(--red)';
+        d.innerHTML = `
+          <div style="flex:1">
+            <div class="act-name">${a.name}</div>
+            <div class="act-meta-lbl">Meta diaria: ${a.metaDia}${metaDia?'':''} · Meta semanal: ${S.metas[a.id]||0}</div>
+            <div style="margin-top:6px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
+          <div class="act-counter" style="gap:8px">
+            <button class="cbtn" style="width:24px;height:24px;font-size:13px" onclick="adj('${role}','${a.id}',-10)">−10</button>
+            <input type="number" min="0" max="999"
+              style="width:58px;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;color:${v>0?'var(--green)':'var(--text)'};font-family:'DM Mono',monospace;font-size:16px;font-weight:500;text-align:center;padding:4px 0;outline:none"
+              id="cv-${a.id}" value="${v}"
+              oninput="setVal('${role}','${a.id}',this.value)"
+              onfocus="this.select()">
+            <button class="cbtn" style="width:36px;height:24px;font-size:11px;font-weight:600" onclick="adj('${role}','${a.id}',10)">+10</button>
+            <button class="cbtn" style="width:36px;height:24px;font-size:11px;font-weight:600;border-color:var(--green-d);color:var(--green)" onclick="adj('${role}','${a.id}',1)">+1</button>
+          </div>`;
+      } else {
+        d.innerHTML = `
+          <div style="flex:1">
+            <div class="act-name">${a.name}</div>
+            <div class="act-meta-lbl">Meta sem.: ${S.metas[a.id]||0}</div>
+          </div>
+          <div class="act-counter">
+            <button class="cbtn" onclick="adj('${role}','${a.id}',-1)">−</button>
+            <span class="cval ${v>0?'has':''}" id="cv-${a.id}">${v}</span>
+            <button class="cbtn" onclick="adj('${role}','${a.id}',1)">+</button>
+          </div>`;
+      }
+      el.appendChild(d);
+    });
+  });
+}
+
+function setVal(role, actId, rawVal){
+  const nv = Math.max(0, parseInt(rawVal)||0);
+  S.counters[role][actId] = nv;
+  const el = document.getElementById(`cv-${actId}`);
+  if(el && el.tagName==='INPUT'){
+    el.style.color = nv>0?'var(--green)':'var(--text)';
+    // redibujar mini-barra
+    const act = Object.values(ACTS).flat().find(a=>a.id===actId);
+    if(act && act.metaDia){
+      const pct=Math.min(Math.round(nv/act.metaDia*100),100);
+      const barColor=pct>=100?'var(--green)':pct>=60?'var(--blue)':pct>=30?'var(--amber)':'var(--red)';
+      const bar=el.closest('.act-item').querySelector('[style*="height:3px"]');
+      if(bar){ const fill=bar.querySelector('div'); if(fill){fill.style.width=pct+'%';fill.style.background=barColor;} }
+    }
+  }
+}
+
+function adj(role, actId, delta){
+  if (!S.counters[role][actId]) S.counters[role][actId]=0;
+  const nv = Math.max(0, S.counters[role][actId]+delta);
+  S.counters[role][actId]=nv;
+  const el=document.getElementById(`cv-${actId}`);
+  if(!el) return;
+  if(el.tagName==='INPUT'){
+    el.value=nv;
+    el.style.color=nv>0?'var(--green)':'var(--text)';
+    const act=Object.values(ACTS).flat().find(a=>a.id===actId);
+    if(act&&act.metaDia){
+      const pct=Math.min(Math.round(nv/act.metaDia*100),100);
+      const barColor=pct>=100?'var(--green)':pct>=60?'var(--blue)':pct>=30?'var(--amber)':'var(--red)';
+      const bar=el.closest('.act-item').querySelector('[style*="height:3px"]');
+      if(bar){const fill=bar.querySelector('div');if(fill){fill.style.width=pct+'%';fill.style.background=barColor;}}
+    }
+  } else {
+    el.textContent=nv;
+    el.className=`cval ${nv>0?'has':''}`;
+  }
+}
+
+// ── SAVE DAY ──────────────────────────────────────────
+function saveDay(role){
+  const date = S.dates[role];
+  const sfx  = role==='promotor'?'P':'A';
+  const btn  = document.getElementById(`sb${sfx}`);
+
+  const rows = ACTS[role]
+    .map(a=>({role,date,actId:a.id,actName:a.name,tier:a.tier,count:S.counters[role][a.id]||0}))
+    .filter(r=>r.count>0);
+
+  if (!rows.length){ showToast('Registra al menos una actividad',true); return; }
+
+  // update local history
+  S.history = S.history.filter(h=>!(h.role===role&&h.date===date));
+  rows.forEach(r=>S.history.push(r));
+  saveStorage();
+
+  if (SCRIPT_URL!=='TU_URL_AQUI'){
+    btn.disabled=true; btn.textContent='Guardando...';
+    sendSheets(rows)
+      .then(()=>{ btn.disabled=false; btn.textContent='Guardar día →'; setSS(sfx,'ok','Sincronizado ✓'); showToast('✓ Día guardado'); renderDash(role); })
+      .catch(()=>{ btn.disabled=false; btn.textContent='Guardar día →'; setSS(sfx,'err','Error de conexión — guardado local'); showToast('Guardado localmente',true); renderDash(role); });
+  } else {
+    showToast('✓ Guardado en este dispositivo');
+    renderDash(role);
+  }
+}
+
+function sendSheets(rows){
+  return fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'save',rows}),headers:{'Content-Type':'text/plain'}})
+    .then(r=>r.json()).then(d=>{ if(d.status!=='ok') throw new Error(); return d; });
+}
+
+function ping(){
+  setSS('P','spin','Conectando...'); setSS('A','spin','Conectando...');
+  fetch(`${SCRIPT_URL}?action=ping`).then(r=>r.json()).then(d=>{
+    if(d.status==='ok'){ setSS('P','ok','Conectado con Sheets'); setSS('A','ok','Conectado con Sheets'); }
+  }).catch(()=>{ setSS('P','err','Sin conexión'); setSS('A','err','Sin conexión'); });
+}
+
+function setSS(sfx,cls,msg){
+  const d=document.getElementById(`sd${sfx}`), t=document.getElementById(`st${sfx}`);
+  if(d) d.className=`sync-dot ${cls}`;
+  if(t) t.textContent=msg;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+function renderDash(role){
+  const sfx = role==='promotor'?'P':'A';
+  const acts = ACTS[role];
+
+  // semana actual
+  const now=new Date(), dow=now.getDay()===0?7:now.getDay();
+  const mon=new Date(now); mon.setDate(now.getDate()-dow+1);
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  const ds=d=>d.toISOString().slice(0,10);
+
+  const wk = S.history.filter(h=>h.role===role&&h.date>=ds(mon)&&h.date<=ds(sun));
+  const tot={}; acts.forEach(a=>{tot[a.id]=0;}); wk.forEach(h=>{if(tot[h.actId]!==undefined)tot[h.actId]+=h.count;});
+
+  const claveActs = acts.filter(a=>a.tier==='clave');
+  const allSum   = Object.values(tot).reduce((s,v)=>s+v,0);
+  const claveSum = claveActs.reduce((s,a)=>s+tot[a.id],0);
+  const pct = allSum>0 ? Math.round(claveSum/allSum*100) : 0;
+
+  // semáforo
+  let sc,st,sd,sv;
+  if(allSum===0){sc='sg';st='Sin datos esta semana';sd='Registra actividades para activar el semáforo Pareto.';sv='—';}
+  else if(pct>=60){sc='sg';st='Zona verde — semana Pareto';sd=`${pct}% de tus actividades son del 20% clave. ¡Vas bien!`;sv=pct+'%';}
+  else if(pct>=40){sc='sa';st='Zona de alerta';sd=`Solo el ${pct}% en actividades clave. Mueve más citas y prospectos.`;sv=pct+'%';}
+  else{sc='sr';st='Zona roja — semana reactiva';sd=`Solo el ${pct}% en actividades clave. El admin está ganando.`;sv=pct+'%';}
+
+  const circ=document.getElementById(`sc${sfx}`);
+  if(circ){circ.className=`sem-circle ${sc}`;circ.textContent=sv;}
+  document.getElementById(`stitle${sfx}`).textContent=st;
+  document.getElementById(`sdesc${sfx}`).textContent=sd;
+
+  // métricas rápidas
+  if(role==='promotor'){
+    document.getElementById('mPctP').textContent = allSum>0?pct+'%':'—';
+    document.getElementById('mEntP').textContent = tot['P1']||'0';
+    document.getElementById('mCitP').textContent = tot['P2']||'0';
+    document.getElementById('mProP').textContent = tot['P4']||'0';
+  } else {
+    document.getElementById('mPctA').textContent = allSum>0?pct+'%':'—';
+    document.getElementById('mCitA').textContent = tot['A1']||'0';
+    document.getElementById('mRefA').textContent = tot['A2']||'0';
+    document.getElementById('mSegA').textContent = tot['A4']||'0';
+  }
+
+  // barras de progreso
+  const pw = document.getElementById(`pw${sfx}`);
+  if(pw){
+    if(allSum===0){
+      pw.innerHTML='<div class="empty-s">Sin datos esta semana.</div>';
+    } else {
+      pw.innerHTML='';
+      claveActs.forEach(a=>{
+        const meta = S.metas[a.id]||1;
+        const v    = tot[a.id]||0;
+        const p    = Math.min(Math.round(v/meta*100),100);
+        const fc   = p>=100?'fg':p>=60?'fb':p>=30?'fa':'fr';
+        pw.innerHTML+=`
+          <div class="prog-item">
+            <div class="prog-header"><span class="prog-name">${a.name}</span><span class="prog-nums">${v} / ${meta}</span></div>
+            <div class="prog-track"><div class="prog-fill ${fc}" style="width:${p}%"></div></div>
+          </div>`;
+      });
+    }
+  }
+
+  // historial 7 días
+  const bc=document.getElementById(`bc${sfx}`);
+  if(bc){
+    bc.innerHTML='';
+    const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const claveIds=claveActs.map(a=>a.id);
+    for(let i=6;i>=0;i--){
+      const d=new Date(); d.setDate(d.getDate()-i);
+      const dateStr=d.toISOString().slice(0,10);
+      const dh=S.history.filter(h=>h.role===role&&h.date===dateStr);
+      const dtot=dh.reduce((s,h)=>s+h.count,0);
+      const dclave=dh.filter(h=>claveIds.includes(h.actId)).reduce((s,h)=>s+h.count,0);
+      const dp=dtot>0?Math.round(dclave/dtot*100):0;
+      const color=dp>=60?'var(--green)':dp>=40?'var(--amber)':dtot>0?'var(--red)':'var(--bg4)';
+      const dayN=dias[d.getDay()];
+      const col=document.createElement('div');
+      col.className='bar-col';
+      col.innerHTML=`
+        <div class="bar-pct">${dtot>0?dp+'%':''}</div>
+        <div class="bar-vis" style="height:${Math.max(dp,dtot>0?6:3)}px;background:${color}"></div>
+        <div class="bar-day">${dayN}</div>`;
+      bc.appendChild(col);
+    }
+  }
+}
+
+// ── CATÁLOGO ──────────────────────────────────────────
+function renderCat(role){
+  const sfx=role==='promotor'?'P':'A';
+  ['clave','secund'].forEach(tier=>{
+    const el=document.getElementById(`cc${sfx}-${tier}`);
+    if(!el) return;
+    el.innerHTML='';
+    ACTS[role].filter(a=>a.tier===tier).forEach(a=>{
+      const mv=S.metas[a.id]!==undefined?S.metas[a.id]:a.meta;
+      const d=document.createElement('div');
+      d.className='cat-item';
+      d.innerHTML=`
+        <span class="cat-badge ${tier==='clave'?'bc':'bs'}">${tier==='clave'?'▲ clave':'▼ sec.'}</span>
+        <div style="flex:1">
+          <div class="cat-name">${a.name}</div>
+          <div class="cat-desc">${a.desc}</div>
+          <div class="meta-row">
+            <label>Meta semanal:</label>
+            <input type="number" class="meta-input" min="0" max="99" value="${mv}" onchange="updMeta('${a.id}',this.value)">
+          </div>
+        </div>`;
+      el.appendChild(d);
+    });
+  });
+}
+
+function updMeta(id,val){
+  S.metas[id]=parseInt(val)||0;
+  saveMetas();
+  renderList('promotor');
+  renderList('agente');
+}
+
+// ── NAV ───────────────────────────────────────────────
+function switchRole(role,btn){
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`panel-${role}`).classList.add('active');
+}
+
+function switchSub(role,sub,btn){
+  const panel=document.getElementById(`panel-${role}`);
+  panel.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  panel.querySelectorAll('.sub-panel').forEach(p=>{p.style.display='none';});
+  btn.classList.add('active');
+  const target=document.getElementById(`${role}-${sub}`);
+  if(target) target.style.display='block';
+  if(sub==='dashboard') renderDash(role);
+  if(sub==='catalogo')  renderCat(role);
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function showToast(msg,isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className=`toast${isErr?' err':''}`;
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
